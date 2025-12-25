@@ -14,7 +14,7 @@ This was an amazing find, and without it, I probably would've given up on this c
 This project serves as a high-performance template for infinite 2D world generation in Godot 4. It focuses on maintaining a smooth 60+ FPS while generating complex, multi-layered terrain and decorations in real-time.
 
 ### Key Features
-*   **Threaded Generation**: Terrain calculations are offloaded to a background thread using `Thread`, `Mutex`, and `Semaphore`. This eliminates the "lag spikes" typically associated with TileMap generation.
+*   **Multithreaded Generation**: Terrain calculations are offloaded to Godot's built-in `WorkerThreadPool`. This allows chunks to be generated in parallel across multiple CPU cores, drastically reducing the time it takes to generate new areas.
 *   **Custom Autotiling Solver**: Instead of relying on Godot's built-in terrain system (which can be difficult to control at scale), this project uses a custom bitmask solver. This allows for "fuzzy" transitions, such as Sand tiles smoothly connecting to Grass without requiring dedicated transition tiles for every combination.
 *   **Dynamic Chunk Management**: Uses a Chunk-based system with separate `render_distance` (visual range) and `generation_distance` (data range). Chunks are automatically unloaded when far from the player to save memory.
 *   **FastNoiseLite Integration**: Leverages Simplex noise with Fractal FBM for organic-looking continents, islands, and coastlines.
@@ -25,14 +25,14 @@ This project serves as a high-performance template for infinite 2D world generat
 ## Under the Hood: Why is this fast?
 The biggest hurdle in infinite generation in Godot is the `TileMap` node itself. Updating thousands of cells takes time. Most tutorials calculate noise and set cells in the same loop, causing massive frame drops as the player moves. This project solves that via a pipeline approach:
 
-1.  **The Threaded Math Layer:** All noise calculations, biome logic, and bitmask neighbor checks happen in a separate thread. This means the heavy math never pauses your game.
+1.  **The Parallel Math Layer:** All noise calculations, biome logic, and bitmask neighbor checks are dispatched as tasks to the `WorkerThreadPool`. This means heavy math happens on background threads, utilizing your CPU's full core count.
 2.  **The Main Thread Budget:** Even if the data is ready, asking Godot to draw 5 chunks instantly (1200+ tiles) will stutter the game. We use a **Drawing Budget** (default: 2 chunks per frame). If 10 chunks are ready, the game draws them over 5 frames. This keeps the FPS silky smooth.
 3.  **Lookup Tables:** Instead of running complex logic for every tile at runtime, we pre-calculate "Tile Rules" on startup. The generator simply looks up "Sand tile with Right and Bottom neighbors" in a Dictionary, which is practically instant.
 
 ## Comparison with Reference & Other Examples
 While this project builds on the excellent foundation provided by [NeonfireStudio](https://github.com/NeonfireStudio/2D-Infinite-World-Generation-in-Godot-4), it introduces several key architectural changes designed for production usability and stability:
 
-*   **Robust Threading Model:** The background thread sleeps completely when not needed (using Semaphores), drastically reducing CPU usage compared to simple loop-based checks found in other examples.
+*   **Modern Threading Model:** Uses `WorkerThreadPool` to scale generation across all available CPU cores, rather than relying on a single manual background thread.
 *   **Safe Spawn System:** Most infinite map tutorials dump you in the ocean or a wall at (0,0). This project uses a custom spiral-search algorithm that runs before the game starts, guaranteeing the player spawns on valid land.
 *   **Decoration Pass:** A dedicated pass for environment (Trees) that respects biomes (Palms on Sand, Forests on Grass) and includes proximity checks to prevent clutter.
 *   **Fuzzy Autotiling Logic:** The custom solver allows different biomes to "blend". For example, Sand can treat Grass as a valid neighbor.
