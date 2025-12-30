@@ -26,7 +26,13 @@ extends Node2D
 @export var render_budget: int = 2
 
 # References to child nodes.
-@onready var tile_map: TileMap = $TileMap
+@onready var layers: Array[TileMapLayer] = [
+	$WaterLayer,
+	$SandLayer,
+	$GrassLayer,
+	$CliffLayer,
+	$EnvLayer
+]
 @onready var player: Node2D = $Player
 
 # The noise generator instance.
@@ -132,7 +138,7 @@ func _ready() -> void:
 # Creates flipped versions of tree tiles if they don't exist.
 # This allows us to reuse the same tree art facing left or right.
 func _setup_tree_alternatives() -> void:
-	var source: TileSetAtlasSource = tile_map.tile_set.get_source(0)
+	var source: TileSetAtlasSource = layers[0].tile_set.get_source(0)
 	for coords in [TREE_PALM_1, TREE_PALM_2, TREE_FOREST]:
 		# Check if alternative 1 (flipped) already exists, if not create it.
 		if source.get_alternative_tiles_count(coords) < 2:
@@ -144,7 +150,7 @@ func _setup_tree_alternatives() -> void:
 # Analyzes the TileSet to build a lookup table for autotiling.
 # This replaces Godot's built-in terrain system with a custom one for more control.
 func _build_tile_rules() -> void:
-	var source: TileSetAtlasSource = tile_map.tile_set.get_source(0)
+	var source: TileSetAtlasSource = layers[0].tile_set.get_source(0)
 	var tiles_count = source.get_tiles_count()
 	
 	for i in range(tiles_count):
@@ -190,7 +196,7 @@ func _process(_delta: float) -> void:
 	if not player: return
 	
 	# Convert player position to chunk coordinates.
-	var player_pos = tile_map.local_to_map(player.position)
+	var player_pos = layers[0].local_to_map(player.position)
 	var current_chunk = Vector2i(floor(player_pos.x / float(chunk_size)), floor(player_pos.y / float(chunk_size)))
 	
 	# 1. Schedule Generation (Logic Range)
@@ -254,11 +260,11 @@ func _draw_chunk(chunk: Vector2i) -> void:
 		for y in range(chunk_size):
 			var pos = start_pos + Vector2i(x, y)
 			if terrain_atlas_coords.has(pos):
-				var layers = terrain_atlas_coords[pos]
-				for layer in layers:
-					var data = layers[layer]
-					# set_cell parameters: layer, position, source_id (0), atlas_coords, alternative_id
-					tile_map.set_cell(layer, pos, 0, Vector2i(data.x, data.y), data.z)
+				var layers_data = terrain_atlas_coords[pos]
+				for layer_id in layers_data:
+					var data = layers_data[layer_id]
+					# set_cell parameters: position, source_id (0), atlas_coords, alternative_id
+					layers[layer_id].set_cell(pos, 0, Vector2i(data.x, data.y), data.z)
 	data_mutex.unlock()
 	drawn_chunks[chunk] = true
 	
@@ -280,8 +286,8 @@ func _undraw_chunk(chunk: Vector2i) -> void:
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var pos = start_pos + Vector2i(x, y)
-			for i in range(tile_map.get_layers_count()): 
-				tile_map.erase_cell(i, pos)
+			for layer in layers: 
+				layer.erase_cell(pos)
 	
 	if debug_sprites.has(chunk):
 		debug_sprites[chunk].queue_free()
@@ -374,7 +380,7 @@ func _generate_chunk(chunk: Vector2i) -> void:
 			var pos = start_pos + Vector2i(x, y)
 			var neighbor_terrains = {}
 			for bit in NEIGHBORS:
-				var n_pos = tile_map.get_neighbor_cell(pos, bit)
+				var n_pos = layers[0].get_neighbor_cell(pos, bit)
 				# If neighbor isn't generated yet, assume empty (or handle gracefully).
 				if terrain_data.has(n_pos):
 					neighbor_terrains[bit] = terrain_data[n_pos].values()
@@ -387,11 +393,11 @@ func _generate_chunk(chunk: Vector2i) -> void:
 	for x in range(chunk_size):
 		for y in range(chunk_size):
 			var pos = start_pos + Vector2i(x, y)
-			var layers = chunk_ids[pos]
+			var cell_layer_ids = chunk_ids[pos]
 			var resolved_layers = {}
 			
-			for layer_id in layers:
-				var type = layers[layer_id]
+			for layer_id in cell_layer_ids:
+				var type = cell_layer_ids[layer_id]
 				
 				# Special Override: Deep Water visuals
 				if layer_id == LAYER_WATER and type == TERRAIN_WATER:
@@ -572,7 +578,7 @@ func _find_safe_spawn() -> Vector2:
 	
 	for i in range(int(pow(max_radius * 2, 2))):
 		if _is_safe_spawn(x, y):
-			return tile_map.map_to_local(Vector2i(x, y))
+			return layers[0].map_to_local(Vector2i(x, y))
 		
 		# Spiral math to change direction
 		if x == y or (x < 0 and x == -y) or (x > 0 and x == 1 - y):
@@ -583,7 +589,7 @@ func _find_safe_spawn() -> Vector2:
 		x += dx
 		y += dy
 			
-	return tile_map.map_to_local(Vector2i(0, 0)) # Fallback if nothing found
+	return layers[0].map_to_local(Vector2i(0, 0)) # Fallback if nothing found
 
 # Helper: Checks if a coordinate is valid for spawning (Sand or Grass).
 func _is_safe_spawn(x: int, y: int) -> bool:
@@ -598,19 +604,19 @@ func _is_safe_spawn(x: int, y: int) -> bool:
 # Whitelist approach: If the tile contains any walkable land type (Sand, Grass, Cliff), it is walkable.
 # This works regardless of whether Water exists on a lower layer.
 func is_tile_walkable(global_pos: Vector2) -> bool:
-	var map_pos = tile_map.local_to_map(global_pos)
+	var map_pos = layers[0].local_to_map(global_pos)
 	
 	data_mutex.lock()
 	var has_data = terrain_data.has(map_pos)
-	var layers = {}
+	var cell_terrain_types = {}
 	if has_data:
-		layers = terrain_data[map_pos]
+		cell_terrain_types = terrain_data[map_pos]
 	data_mutex.unlock()
 	
 	if not has_data:
 		return false # Prevent walking off the generated map
 		
-	if layers.has(LAYER_GRASS) or layers.has(LAYER_SAND) or layers.has(LAYER_CLIFF):
+	if cell_terrain_types.has(LAYER_GRASS) or cell_terrain_types.has(LAYER_SAND) or cell_terrain_types.has(LAYER_CLIFF):
 		return true
 			
 	return false

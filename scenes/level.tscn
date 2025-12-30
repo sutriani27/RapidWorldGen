@@ -1284,13 +1284,19 @@ sources/0 = SubResource("TileSetAtlasSource_w8frs")
 script = ExtResource("1_w7c3h")
 render_budget = 1
 
-[node name="TileMap" type="TileMap" parent="."]
+[node name="WaterLayer" type="TileMapLayer" parent="."]
 tile_set = SubResource("TileSet_mx8sn")
-format = 2
-layer_0/name = "water"
-layer_1/name = "sand"
-layer_2/name = "grass"
-layer_3/name = "cliff"
-layer_4/name = "environment"
+
+[node name="SandLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_mx8sn")
+
+[node name="GrassLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_mx8sn")
+
+[node name="CliffLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_mx8sn")
+
+[node name="EnvLayer" type="TileMapLayer" parent="."]
+tile_set = SubResource("TileSet_mx8sn")
 
 [node name="Player" parent="." instance=ExtResource("3_w8frs")]

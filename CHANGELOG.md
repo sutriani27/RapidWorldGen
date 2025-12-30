@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2025-12-29
+### Changed
+- **Migrated from `TileMap` to `TileMapLayer`**:
+    - Replaced the deprecated single `TileMap` node with 5 distinct `TileMapLayer` nodes (Water, Sand, Grass, Cliff, Env).
+    - Updated `level.gd` to manage an array of layers (`layers: Array[TileMapLayer]`) instead of a single `tile_map` reference.
+    - Updated generation and drawing logic to target specific layer nodes, resolving deprecation warnings in Godot 4.3+.
+
 ## [1.1.0] - 2025-12-24
 ### Changed
 - Refactored the core generation system to use Godot 4's built-in `WorkerThreadPool` instead of a manual `Thread` + `Semaphore` loop.

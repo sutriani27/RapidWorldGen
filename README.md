@@ -1,6 +1,6 @@
 # Rapid Infinite 2D World Generation - Godot 4.5
 This is the fastest 2D infinite procedural generation "engine" built in Godot 4.5.
-as
+
 ### Introduction + Backstory (skip to next section to find what you actually care about)
 Let me introduce myself. I am colloquially known as TNT_Guerrilla. I am a Python programmer who specializes in practical utility software and AI infused programs. I started learning Python in high school, and it has been a hobby of mine since 2016.
 
@@ -23,7 +23,7 @@ This project serves as a high-performance template for infinite 2D world generat
 *   **Top-Down Shooter Logic**: Includes a responsive player controller with mouse-aiming, physics-based projectiles, and an 8-directional animation system.
 
 ## Under the Hood: Why is this fast?
-The biggest hurdle in infinite generation in Godot is the `TileMap` node itself. Updating thousands of cells takes time. Most tutorials calculate noise and set cells in the same loop, causing massive frame drops as the player moves. This project solves that via a pipeline approach:
+The biggest hurdle in infinite generation in Godot is the `TileMap`/`TileMapLayer` system itself. Updating thousands of cells takes time. Most tutorials calculate noise and set cells in the same loop, causing massive frame drops as the player moves. This project solves that via a pipeline approach:
 
 1.  **The Parallel Math Layer:** All noise calculations, biome logic, and bitmask neighbor checks are dispatched as tasks to the `WorkerThreadPool`. This means heavy math happens on background threads, utilizing your CPU's full core count.
 2.  **The Main Thread Budget:** Even if the data is ready, asking Godot to draw 5 chunks instantly (1200+ tiles) will stutter the game. We use a **Drawing Budget** (default: 2 chunks per frame). If 10 chunks are ready, the game draws them over 5 frames. This keeps the FPS silky smooth.
